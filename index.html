@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f6f5ff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#171621" media="(prefers-color-scheme: dark)">
+    <meta name="description" content="用最低操作成本记录白天困倦程度。">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="今天困不困">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <link rel="stylesheet" href="./styles.css">
+    <title>今天困不困</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+
+    <div class="app-shell">
+      <header class="site-header">
+        <div>
+          <p class="eyebrow" id="today-label"></p>
+          <h1>今天困不困</h1>
+          <p class="tagline">点一下就记好，之后和睡眠时长对照。</p>
+        </div>
+        <button class="install-button" id="install-button" type="button" hidden>安装到手机</button>
+      </header>
+
+      <nav class="page-tabs" aria-label="主要页面">
+        <a class="page-tab is-active" href="#home" data-page-link="home" aria-current="page">今日</a>
+        <a class="page-tab" href="#history" data-page-link="history">历史记录</a>
+      </nav>
+
+      <main id="main-content">
+        <section class="page is-active" id="home-page" data-page="home" aria-labelledby="check-in-title">
+          <div class="check-in-heading">
+            <h2 id="check-in-title">现在感觉怎么样？</h2>
+            <p>无需填写，选择后自动记录当前时间。</p>
+          </div>
+
+          <div class="mood-actions" role="group" aria-label="记录当前困倦状态">
+            <button class="mood-button mood-awake" type="button" data-status="awake">
+              <span class="mood-emoji" aria-hidden="true">☀️</span>
+              <span>清醒</span>
+            </button>
+            <button class="mood-button mood-sleepy" type="button" data-status="sleepy">
+              <span class="mood-emoji" aria-hidden="true">🌥</span>
+              <span>有点困</span>
+            </button>
+            <button class="mood-button mood-very-sleepy" type="button" data-status="very-sleepy">
+              <span class="mood-emoji" aria-hidden="true">😴</span>
+              <span>很困</span>
+            </button>
+          </div>
+
+          <div class="record-feedback" id="record-feedback" role="status" aria-live="polite" hidden>
+            <p id="record-feedback-text"></p>
+            <button class="undo-button" id="undo-button" type="button">撤销本次记录</button>
+          </div>
+
+          <section class="today-section" aria-labelledby="today-records-title">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">TODAY</p>
+                <h2 id="today-records-title">今天的记录</h2>
+              </div>
+              <strong class="record-count" id="today-count" aria-label="今天记录数量">0 次</strong>
+            </div>
+            <div id="today-records" class="record-list" aria-live="polite"></div>
+          </section>
+        </section>
+
+        <section class="page" id="history-page" data-page="history" aria-labelledby="history-title" hidden>
+          <div class="history-heading">
+            <div>
+              <p class="section-kicker">HISTORY</p>
+              <h2 id="history-title">历史记录</h2>
+            </div>
+            <div class="range-picker" role="group" aria-label="选择历史记录范围">
+              <button class="range-button is-active" type="button" data-days="7" aria-pressed="true">7天</button>
+              <button class="range-button" type="button" data-days="14" aria-pressed="false">14天</button>
+              <button class="range-button" type="button" data-days="30" aria-pressed="false">30天</button>
+            </div>
+          </div>
+
+          <section class="stats-card" aria-labelledby="stats-title">
+            <div class="section-heading compact">
+              <div>
+                <p class="section-kicker">LAST 7 DAYS</p>
+                <h3 id="stats-title">最近 7 天</h3>
+              </div>
+              <span class="stats-total" id="stats-total">共 0 次</span>
+            </div>
+            <div class="stats-list" id="stats-list"></div>
+          </section>
+
+          <section aria-labelledby="history-list-title">
+            <div class="section-heading history-list-heading">
+              <h3 id="history-list-title">记录明细</h3>
+              <span id="history-range-label">最近 7 天</span>
+            </div>
+            <div id="history-records" class="history-groups" aria-live="polite"></div>
+          </section>
+
+          <section class="data-card" aria-labelledby="data-title">
+            <div>
+              <p class="section-kicker">BACKUP</p>
+              <h3 id="data-title">数据备份</h3>
+              <p>记录只保存在这台设备的当前浏览器中。</p>
+            </div>
+            <div class="data-actions">
+              <button class="secondary-button" id="export-csv-button" type="button">导出 CSV</button>
+              <button class="secondary-button" id="export-json-button" type="button">导出 JSON</button>
+              <label class="secondary-button file-button" for="import-file">导入备份</label>
+              <input id="import-file" class="visually-hidden" type="file" accept=".csv,.json,text/csv,application/json" aria-describedby="import-help">
+              <p class="data-help" id="import-help">支持本工具导出的 CSV 或 JSON；重复记录会自动跳过。</p>
+              <button class="danger-button" id="clear-data-button" type="button">清空全部数据</button>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <footer>
+        <p>数据留在你的设备上 · 离线也能记录</p>
+      </footer>
+    </div>
+
+    <dialog class="confirm-dialog" id="delete-dialog" aria-labelledby="delete-dialog-title">
+      <form method="dialog">
+        <h2 id="delete-dialog-title">删除这条记录？</h2>
+        <p id="delete-dialog-copy">删除后无法恢复。</p>
+        <div class="dialog-actions">
+          <button class="secondary-button" value="cancel">取消</button>
+          <button class="danger-button solid" id="confirm-delete-button" value="confirm">确认删除</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="confirm-dialog" id="clear-dialog" aria-labelledby="clear-dialog-title">
+      <form method="dialog">
+        <h2 id="clear-dialog-title">要清空全部数据吗？</h2>
+        <p>所有困倦记录都会被删除。建议先导出备份。</p>
+        <div class="dialog-actions">
+          <button class="secondary-button" value="cancel">取消</button>
+          <button class="danger-button solid" id="continue-clear-button" value="continue">继续</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="confirm-dialog" id="final-clear-dialog" aria-labelledby="final-clear-title">
+      <form method="dialog">
+        <h2 id="final-clear-title">最后确认</h2>
+        <p>此操作无法撤销，确定删除全部记录？</p>
+        <div class="dialog-actions">
+          <button class="secondary-button" value="cancel">保留数据</button>
+          <button class="danger-button solid" id="confirm-clear-button" value="confirm">全部删除</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
